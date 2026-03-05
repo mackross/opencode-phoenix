@@ -30,3 +30,6 @@ jobs:
 
       - name: Run installer smoke tests
         run: bash test/smoke.sh
+
+      - name: Run opencode integration tests
+        run: bash test/opencode_integration.sh

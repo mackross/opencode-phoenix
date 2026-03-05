@@ -136,7 +136,7 @@ const evaluateDenyRules = (mutation) => {
         filePath,
         matched: match,
         why: "Web layer modules should stay thin and should not access Repo directly.",
-        fix: "Move data access into a context module under lib/runix/ and call that context from the LiveView/controller.",
+        fix: "Move data access into a context module under lib/<app_name>/ and call that context from the LiveView/controller.",
       })
     }
   }

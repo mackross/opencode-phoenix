@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP_DIR="$(mktemp -d /tmp/opencode-phoenix-smoke-XXXXXX)"
+TMP_DIR="$(mktemp -d -t opencode-phoenix-smoke-XXXXXX)"
 TARGET="$TMP_DIR/opencode_phoenix_target"
 
 cleanup() { rm -rf "$TMP_DIR"; }

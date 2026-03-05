@@ -46,7 +46,7 @@ test("collectMutations parses apply_patch added lines per file", () => {
     args: {
       patchText: [
         "*** Begin Patch",
-        "*** Update File: lib/runix_web/live/demo_live.ex",
+        "*** Update File: lib/my_app_web/live/demo_live.ex",
         "@@",
         "+  live_patch(socket, to: ~p\"/x\")",
         "*** End Patch",
@@ -56,13 +56,13 @@ test("collectMutations parses apply_patch added lines per file", () => {
 
   const mutations = collectMutations(input, output)
   assert.equal(mutations.length, 1)
-  assert.equal(mutations[0].filePath, "lib/runix_web/live/demo_live.ex")
+  assert.equal(mutations[0].filePath, "lib/my_app_web/live/demo_live.ex")
   assert.match(mutations[0].text, /live_patch/)
 })
 
 test("deny: web layer cannot use Repo directly", async () => {
   await expectDeny({
-    filePath: "lib/runix_web/live/demo_live.ex",
+    filePath: "lib/my_app_web/live/demo_live.ex",
     content: "def mount(_, _, socket), do: {:ok, assign(socket, :users, Repo.all(User))}",
     ruleId: "web-layer-no-repo",
   })
@@ -70,7 +70,7 @@ test("deny: web layer cannot use Repo directly", async () => {
 
 test("deny: deprecated live navigation helper", async () => {
   await expectDeny({
-    filePath: "lib/runix_web/live/demo_live.ex",
+    filePath: "lib/my_app_web/live/demo_live.ex",
     content: "{:noreply, live_patch(socket, to: ~p\"/home\")}",
     ruleId: "deprecated-live-nav",
   })
@@ -78,7 +78,7 @@ test("deny: deprecated live navigation helper", async () => {
 
 test("deny: legacy form API usage", async () => {
   await expectDeny({
-    filePath: "lib/runix_web/live/form_live.ex",
+    filePath: "lib/my_app_web/live/form_live.ex",
     content: "Phoenix.HTML.form_for(changeset, \"/save\", fn f -> f end)",
     ruleId: "legacy-form-api",
   })
@@ -86,7 +86,7 @@ test("deny: legacy form API usage", async () => {
 
 test("deny: flash_group outside layouts", async () => {
   await expectDeny({
-    filePath: "lib/runix_web/live/page_live.html.heex",
+    filePath: "lib/my_app_web/live/page_live.html.heex",
     content: "<.flash_group flash={@flash} />",
     ruleId: "flash-group-outside-layouts",
   })
@@ -94,7 +94,7 @@ test("deny: flash_group outside layouts", async () => {
 
 test("deny: inline script in heex", async () => {
   await expectDeny({
-    filePath: "lib/runix_web/live/page_live.html.heex",
+    filePath: "lib/my_app_web/live/page_live.html.heex",
     content: "<script>console.log('x')</script>",
     ruleId: "inline-script-in-heex",
   })
@@ -102,7 +102,7 @@ test("deny: inline script in heex", async () => {
 
 test("deny: banned HTTP client", async () => {
   await expectDeny({
-    filePath: "lib/runix/services/http.ex",
+    filePath: "lib/my_app/services/http.ex",
     content: "HTTPoison.get!(\"https://example.com\")",
     ruleId: "banned-http-client",
   })
@@ -110,10 +110,10 @@ test("deny: banned HTTP client", async () => {
 
 test("warn: missing @impl true", async () => {
   await expectWarn({
-    filePath: "lib/runix_web/live/demo_live.ex",
+    filePath: "lib/my_app_web/live/demo_live.ex",
     content: [
-      "defmodule RunixWeb.DemoLive do",
-      "  use RunixWeb, :live_view",
+      "defmodule MyAppWeb.DemoLive do",
+      "  use MyAppWeb, :live_view",
       "  def mount(_params, _session, socket), do: {:ok, socket}",
       "end",
     ].join("\n"),
@@ -123,7 +123,7 @@ test("warn: missing @impl true", async () => {
 
 test("warn: auto_upload enabled", async () => {
   await expectWarn({
-    filePath: "lib/runix_web/live/upload_live.ex",
+    filePath: "lib/my_app_web/live/upload_live.ex",
     content: "allow_upload(socket, :image, auto_upload: true)",
     ruleId: "auto-upload-enabled",
   })
@@ -131,15 +131,15 @@ test("warn: auto_upload enabled", async () => {
 
 test("warn: live component usage", async () => {
   await expectWarn({
-    filePath: "lib/runix_web/live/component_live.ex",
-    content: "use RunixWeb, :live_component",
+    filePath: "lib/my_app_web/live/component_live.ex",
+    content: "use MyAppWeb, :live_component",
     ruleId: "live-component-usage",
   })
 })
 
 test("warn: Process.sleep in tests", async () => {
   await expectWarn({
-    filePath: "test/runix/some_test.exs",
+    filePath: "test/my_app/some_test.exs",
     content: "Process.sleep(50)",
     ruleId: "process-sleep-in-tests",
   })
@@ -147,7 +147,7 @@ test("warn: Process.sleep in tests", async () => {
 
 test("warn: String.to_atom usage", async () => {
   await expectWarn({
-    filePath: "lib/runix/convert.ex",
+    filePath: "lib/my_app/convert.ex",
     content: "String.to_atom(value)",
     ruleId: "string-to-atom",
   })
@@ -155,8 +155,8 @@ test("warn: String.to_atom usage", async () => {
 
 test("warn: hardcoded absolute path", async () => {
   await expectWarn({
-    filePath: "lib/runix/storage.ex",
-    content: "path = \"/tmp/uploads/image.png\"",
+    filePath: "lib/my_app/storage.ex",
+    content: "path = \"/var/app/uploads/image.png\"",
     ruleId: "hardcoded-absolute-path",
   })
 })
@@ -165,7 +165,7 @@ test("heex colocated hook script is allowed", async () => {
   const hook = await buildHook()
   await runWrite(
     hook,
-    "lib/runix_web/live/page_live.html.heex",
+    "lib/my_app_web/live/page_live.html.heex",
     "<script :type={Phoenix.LiveView.ColocatedHook} name=\".X\">export default {}</script>",
   )
 })
@@ -174,15 +174,15 @@ test("flash_group in layouts is allowed", async () => {
   const hook = await buildHook()
   await runWrite(
     hook,
-    "lib/runix_web/components/layouts.ex",
+    "lib/my_app_web/components/layouts.ex",
     "def flash(assigns), do: ~H\"<.flash_group flash={@flash} />\"",
   )
 })
 
 test("private helper finds missing @impl true callback annotations", () => {
   const source = [
-    "defmodule RunixWeb.DemoLive do",
-    "  use RunixWeb, :live_view",
+    "defmodule MyAppWeb.DemoLive do",
+    "  use MyAppWeb, :live_view",
     "",
     "  def mount(_params, _session, socket), do: {:ok, socket}",
     "",

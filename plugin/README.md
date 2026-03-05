@@ -7,10 +7,10 @@ OpenCode plugin for Elixir/Phoenix projects using two guard levels only:
 
 ## Development Workflow
 
-1. Author plugin code in `runix` under `.opencode/plugins/elixir-phoenix-guardrails/`.
-2. Sync local changes into the distribution repo with `scripts/opencode_phoenix.sh sync`.
-3. Run canonical tests in `~/dev/opencode-phoenix`.
-4. Publish from `runix` after tests pass.
+1. Update plugin behavior in `plugin/src/index.js`.
+2. Add or adjust coverage in `plugin/test/index.test.js`.
+3. Run `npm --prefix plugin test`.
+4. Run `bash test/smoke.sh` before publishing.
 
 Canonical release repo: `mackross/opencode-phoenix`
 
@@ -48,7 +48,7 @@ npm run test:watch
 Smoke test in the repo root:
 
 ```bash
-opencode run --agent build "Use apply_patch to add live_patch in lib/runix_web/live/test_live.ex."
+opencode run --agent build "Use apply_patch to add live_patch in lib/my_app_web/live/test_live.ex."
 ```
 
 The plugin should block with a `deny` message explaining the fix.
