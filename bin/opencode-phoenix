@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+CMD="${1:-}"
+[[ -n "$CMD" ]] || { echo "usage: opencode-phoenix <install|update|check> [--target PATH] [--force]"; exit 2; }
+shift || true
+
+TARGET="${OPENCODE_PHOENIX_TARGET:-$PWD}"
+FORCE=0
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --target) TARGET="$2"; shift 2 ;;
+    --force) FORCE=1; shift ;;
+    *) echo "unknown arg: $1"; exit 2 ;;
+  esac
+done
+
+TARGET="${TARGET/#\~/$HOME}"
+
+PLUGIN_SRC="$ROOT/plugin"
+SKILLS_SRC="$ROOT/skills"
+PLUGIN_DST="$TARGET/.opencode/plugins/elixir-phoenix-guardrails"
+LOADER_DST="$TARGET/.opencode/plugins/elixir-phoenix-guardrails.js"
+LOCK_PATH="$TARGET/.opencode/opencode-phoenix.lock.json"
+SKILLS=(elixir ecto phoenix-live-view phoenix-uploads testing)
+
+[[ -d "$PLUGIN_SRC" && -d "$SKILLS_SRC" ]] || {
+  echo "expected plugin/ and skills/ under $ROOT"; exit 1;
+}
+
+src_commit() { git -C "$ROOT" rev-parse HEAD 2>/dev/null || echo unknown; }
+src_ref() { local r; r="$(git -C "$ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"; [[ "$r" == "HEAD" ]] && src_commit || echo "$r"; }
+lock_commit() { [[ -f "$LOCK_PATH" ]] && sed -n 's/.*"commit"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$LOCK_PATH" | head -n1 || true; }
+
+managed_changes() {
+  git -C "$TARGET" rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 1
+  local paths=(.opencode/plugins/elixir-phoenix-guardrails .opencode/plugins/elixir-phoenix-guardrails.js)
+  for skill in "${SKILLS[@]}"; do paths+=(".agents/skills/$skill"); done
+  [[ -n "$(git -C "$TARGET" status --porcelain -- "${paths[@]}")" ]]
+}
+
+copy_tree() { rm -rf "$2"; mkdir -p "$(dirname "$2")"; cp -R "$1" "$2"; }
+
+write_loader() {
+  mkdir -p "$(dirname "$LOADER_DST")"
+  cat >"$LOADER_DST" <<'EOF'
+export { ElixirPhoenixGuardrails } from "./elixir-phoenix-guardrails/src/index.js"
+EOF
+}
+
+write_lock() {
+  mkdir -p "$(dirname "$LOCK_PATH")"
+  cat >"$LOCK_PATH" <<EOF
+{
+  "repo": "mackross/opencode-phoenix",
+  "ref": "$(src_ref)",
+  "commit": "$(src_commit)",
+  "installed_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+}
+
+apply_install() {
+  copy_tree "$PLUGIN_SRC" "$PLUGIN_DST"
+  for skill in "${SKILLS[@]}"; do copy_tree "$SKILLS_SRC/$skill" "$TARGET/.agents/skills/$skill"; done
+  write_loader
+  write_lock
+  echo "installed opencode-phoenix @ $(src_commit)"
+}
+
+check_state() {
+  local current expected
+  expected="$(src_commit)"
+  current="$(lock_commit)"
+  [[ -d "$PLUGIN_DST" ]] || { echo "missing $PLUGIN_DST"; exit 1; }
+  for skill in "${SKILLS[@]}"; do [[ -f "$TARGET/.agents/skills/$skill/SKILL.md" ]] || { echo "missing skills/$skill"; exit 1; }; done
+  [[ -n "$current" ]] || { echo "missing lock file: $LOCK_PATH"; exit 1; }
+  [[ "$current" == "$expected" ]] || { echo "outdated: lock=$current expected=$expected"; exit 1; }
+  echo "opencode-phoenix is up to date ($current)"
+}
+
+case "$CMD" in
+  install) apply_install ;;
+  update)
+    if managed_changes && [[ "$FORCE" -ne 1 ]]; then
+      echo "managed paths have local edits; rerun with --force"
+      exit 1
+    fi
+    apply_install
+    ;;
+  check) check_state ;;
+  *) echo "unknown command: $CMD"; exit 2 ;;
+esac
