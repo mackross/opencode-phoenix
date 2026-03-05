@@ -19,6 +19,11 @@ OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" "$ROOT/bin/opencode-p
   exit 1
 }
 
+[[ -f "$TARGET/lib/mix/tasks/opencode/phoenix/publish.ex" ]] || {
+  echo "missing installed publish task"
+  exit 1
+}
+
 (
   cd "$TARGET"
   OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" mix opencode.phoenix.pull --check >/dev/null

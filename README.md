@@ -51,6 +51,13 @@ mix opencode.phoenix.pull --check
 mix opencode.phoenix.pull --force
 ```
 
+It also installs a publish task for source repos that maintain these managed paths:
+
+```bash
+mix opencode.phoenix.publish --dry-run
+mix opencode.phoenix.publish
+```
+
 If `mix opencode.phoenix.pull` is missing, `bin/opencode-phoenix` bootstraps it via a temporary task and removes the temp file after bootstrap.
 
 Optional env vars for the mix task:
@@ -58,6 +65,7 @@ Optional env vars for the mix task:
 - `OPENCODE_PHOENIX_REPO` (default `https://github.com/mackross/opencode-phoenix.git`)
 - `OPENCODE_PHOENIX_REF` (default `main`)
 - `OPENCODE_PHOENIX_DST` (default `/tmp/opencode-phoenix`)
+- `OPENCODE_PHOENIX_REMOTE` (used by `mix opencode.phoenix.publish`)
 
 ## Publishing Updates
 
