@@ -1,0 +1,32 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  plugin-and-installer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run plugin tests
+        run: npm --prefix plugin test
+
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.18.4"
+          otp-version: "27.3"
+
+      - name: Install Phoenix generator
+        run: |
+          mix local.hex --force
+          mix archive.install hex phx_new --force
+
+      - name: Run installer smoke tests
+        run: bash test/smoke.sh
