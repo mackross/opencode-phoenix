@@ -2,11 +2,13 @@
 
 OpenCode guardrails and skills for Phoenix/Elixir projects.
 
-This repo packages three things:
+This repo packages:
 
 - `plugin/` - the `elixir-phoenix-guardrails` OpenCode plugin (`deny` + `warn` rules)
 - `skills/` - reusable project skills (`elixir`, `ecto`, `phoenix-live-view`, `phoenix-uploads`, `testing`)
-- `bin/opencode-phoenix` - installer/updater script for bootstrapping into any Phoenix repo
+- `mix_tasks/` - pull task sources installed into consumer repos
+- `manifest/install_map.txt` - source-of-truth mapping for installed paths
+- `bin/opencode-phoenix` - thin bootstrap wrapper that ensures `mix opencode.phoenix.pull` exists and then delegates to it
 
 ## Install Into a Project
 
@@ -16,12 +18,12 @@ Clone this repo, then run the installer script targeting your Phoenix app:
 ./bin/opencode-phoenix install --target /path/to/your_phoenix_app
 ```
 
-This installs:
+This installs/updates mapped paths from `manifest/install_map.txt`, including:
 
 - `.opencode/plugins/elixir-phoenix-guardrails/`
 - `.opencode/plugins/elixir-phoenix-guardrails.js`
 - `.agents/skills/<skill>/` for all bundled skills
-- `lib/mix/tasks/opencode.phoenix.pull.ex`
+- `lib/mix/tasks/opencode/phoenix/pull.ex`
 - `.opencode/opencode-phoenix.lock.json` lock metadata
 
 ## Update / Check
@@ -48,6 +50,8 @@ mix opencode.phoenix.pull
 mix opencode.phoenix.pull --check
 mix opencode.phoenix.pull --force
 ```
+
+If `mix opencode.phoenix.pull` is missing, `bin/opencode-phoenix` bootstraps it via a temporary task and removes the temp file after bootstrap.
 
 Optional env vars for the mix task:
 

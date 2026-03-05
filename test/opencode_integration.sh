@@ -14,7 +14,8 @@ if ! command -v opencode >/dev/null 2>&1; then
 fi
 
 mix phx.new "$TARGET" --no-install --no-ecto >/dev/null
-"$ROOT/bin/opencode-phoenix" install --target "$TARGET" >/dev/null
+(cd "$TARGET" && mix deps.get >/dev/null)
+OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" "$ROOT/bin/opencode-phoenix" install --target "$TARGET" >/dev/null
 
 run_opencode() {
   local prompt="$1"

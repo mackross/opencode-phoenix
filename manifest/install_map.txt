@@ -1,0 +1,9 @@
+# source|target|type
+plugin|.opencode/plugins/elixir-phoenix-guardrails|dir
+plugin_loader/elixir-phoenix-guardrails.js|.opencode/plugins/elixir-phoenix-guardrails.js|file
+skills/elixir|.agents/skills/elixir|dir
+skills/ecto|.agents/skills/ecto|dir
+skills/phoenix-live-view|.agents/skills/phoenix-live-view|dir
+skills/phoenix-uploads|.agents/skills/phoenix-uploads|dir
+skills/testing|.agents/skills/testing|dir
+mix_tasks/opencode/phoenix/pull.ex|lib/mix/tasks/opencode/phoenix/pull.ex|file
