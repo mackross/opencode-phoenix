@@ -23,6 +23,8 @@ This installs/updates mapped paths from `manifest/install_map.txt`, including:
 - `.opencode/plugins/elixir-phoenix-guardrails/`
 - `.opencode/plugins/elixir-phoenix-guardrails.js`
 - `.agents/skills/<skill>/` for all bundled skills
+- `lib/opencode/phoenix/guardrails/`
+- `lib/mix/tasks/opencode/phoenix/check/`
 - `lib/mix/tasks/opencode/phoenix/pull.ex`
 - `.opencode/opencode-phoenix.lock.json` lock metadata
 
@@ -49,6 +51,19 @@ The installed mix task gives projects a single pull/update command:
 mix opencode.phoenix.pull
 mix opencode.phoenix.pull --check
 mix opencode.phoenix.pull --force
+mix opencode.phoenix.check
+```
+
+Projects can wire the check task into their `precommit` alias, for example:
+
+```elixir
+precommit: [
+  "compile --warnings-as-errors",
+  "deps.unlock --unused",
+  "format",
+  "opencode.phoenix.check",
+  "test"
+]
 ```
 
 It also installs a publish task for source repos that maintain these managed paths:

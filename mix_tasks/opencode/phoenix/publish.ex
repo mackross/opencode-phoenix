@@ -12,6 +12,8 @@ defmodule Mix.Tasks.Opencode.Phoenix.Publish do
     {".agents/skills/phoenix-live-view", "skills/phoenix-live-view"},
     {".agents/skills/phoenix-uploads", "skills/phoenix-uploads"},
     {".agents/skills/testing", "skills/testing"},
+    {"lib/opencode/phoenix/guardrails", "lib/opencode/phoenix/guardrails"},
+    {"lib/mix/tasks/opencode/phoenix/check", "mix_tasks/opencode/phoenix/check"},
     {"lib/mix/tasks/opencode/phoenix/pull.ex", "mix_tasks/opencode/phoenix/pull.ex"},
     {"lib/mix/tasks/opencode/phoenix/publish.ex", "mix_tasks/opencode/phoenix/publish.ex"}
   ]
@@ -125,8 +127,13 @@ defmodule Mix.Tasks.Opencode.Phoenix.Publish do
 
   defp split_sha(prefix) do
     run_cmd!("git", ["subtree", "split", "--prefix=#{prefix}"])
-    |> String.split("\n", trim: true)
+    |> then(&Regex.scan(~r/\b[0-9a-f]{40}\b/, &1))
+    |> List.flatten()
     |> List.last()
+    |> case do
+      nil -> Mix.raise("unable to parse subtree split sha for #{prefix}")
+      sha -> sha
+    end
   end
 
   defp maybe_commit_and_push(dst, branch, no_push?) do

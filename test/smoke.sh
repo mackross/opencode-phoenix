@@ -24,9 +24,20 @@ OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" "$ROOT/bin/opencode-p
   exit 1
 }
 
+[[ -f "$TARGET/lib/mix/tasks/opencode/phoenix/check/check.ex" ]] || {
+  echo "missing installed check task"
+  exit 1
+}
+
+[[ -f "$TARGET/lib/opencode/phoenix/guardrails/check.ex" ]] || {
+  echo "missing installed guardrails package"
+  exit 1
+}
+
 (
   cd "$TARGET"
   OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" mix opencode.phoenix.pull --check >/dev/null
+  mix opencode.phoenix.check >/dev/null
 )
 
 printf '\n# local change\n' >> "$TARGET/.agents/skills/elixir/SKILL.md"
