@@ -14,6 +14,11 @@ mix phx.new "$TARGET" --no-install --no-ecto >/dev/null
 AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" "$ROOT/bin/agent-friendly-installer" install --target "$TARGET"
 AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" "$ROOT/bin/agent-friendly-installer" check --target "$TARGET"
 
+if [[ "$(rg -c '"agentfriendly.guardrails.check"' "$TARGET/mix.exs")" != "1" ]]; then
+  echo "expected precommit alias to include agentfriendly.guardrails.check once after install"
+  exit 1
+fi
+
 [[ -f "$TARGET/lib/mix/tasks/agentfriendly/pull.ex" ]] || {
   echo "missing installed mix task"
   exit 1
@@ -61,5 +66,10 @@ fi
   cd "$TARGET"
   AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" mix agentfriendly.pull --check >/dev/null
 )
+
+if [[ "$(rg -c '"agentfriendly.guardrails.check"' "$TARGET/mix.exs")" != "1" ]]; then
+  echo "expected precommit alias to include agentfriendly.guardrails.check once after repeated update"
+  exit 1
+fi
 
 echo "smoke passed"

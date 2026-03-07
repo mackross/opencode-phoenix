@@ -67,6 +67,8 @@ precommit: [
 ]
 ```
 
+Fresh installs and updates will add `"agentfriendly.guardrails.check"` to an existing `precommit` alias in `mix.exs` if it is not already present. The edit is idempotent. If a project has no `precommit` alias, the installer leaves `mix.exs` alone and prints a manual follow-up message.
+
 Source repos that maintain these managed paths can publish with:
 
 ```bash
