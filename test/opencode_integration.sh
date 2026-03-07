@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP_DIR="$(mktemp -d -t opencode-phoenix-integration-XXXXXX)"
+TMP_DIR="$(mktemp -d -t phoenix-agentfriendly-integration-XXXXXX)"
 TARGET="$TMP_DIR/guardrails_app"
 
 cleanup() { rm -rf "$TMP_DIR"; }
@@ -15,7 +15,7 @@ fi
 
 mix phx.new "$TARGET" --no-install --no-ecto >/dev/null
 (cd "$TARGET" && mix deps.get >/dev/null)
-OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" "$ROOT/bin/opencode-phoenix" install --target "$TARGET" >/dev/null
+AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" "$ROOT/bin/agent-friendly-installer" install --target "$TARGET" >/dev/null
 
 run_opencode() {
   local prompt="$1"

@@ -3,13 +3,13 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CMD="${1:-}"
-[[ -n "$CMD" ]] || { echo "usage: opencode-phoenix <install|update|check> [--target PATH] [--force]"; exit 2; }
+[[ -n "$CMD" ]] || { echo "usage: agent-friendly-installer <install|update|check> [--target PATH] [--force]"; exit 2; }
 shift || true
 
-TARGET="${OPENCODE_PHOENIX_TARGET:-$PWD}"
-REPO="${OPENCODE_PHOENIX_REPO:-https://github.com/mackross/opencode-phoenix.git}"
-REF="${OPENCODE_PHOENIX_REF:-main}"
-DST="${OPENCODE_PHOENIX_DST:-/tmp/opencode-phoenix}"
+TARGET="${AGENT_FRIENDLY_TARGET:-$PWD}"
+REPO="${AGENT_FRIENDLY_REPO:-https://github.com/mackross/phoenix-agentfriendly.git}"
+REF="${AGENT_FRIENDLY_REF:-main}"
+DST="${AGENT_FRIENDLY_DST:-/tmp/phoenix-agentfriendly}"
 FORCE=0
 
 while [[ $# -gt 0 ]]; do
@@ -23,14 +23,14 @@ done
 TARGET="${TARGET/#\~/$HOME}"
 DST="${DST/#\~/$HOME}"
 
-PULL_TASK="$TARGET/lib/mix/tasks/opencode/phoenix/pull.ex"
-TMP_SRC="$ROOT/mix_tasks/opencode/phoenix/pull_tmp.ex"
-TMP_DST="$TARGET/lib/mix/tasks/opencode/phoenix/pull_tmp.ex"
+PULL_TASK="$TARGET/lib/mix/tasks/agentfriendly/pull.ex"
+TMP_SRC="$ROOT/mix_tasks/agentfriendly/pull_tmp.ex"
+TMP_DST="$TARGET/lib/mix/tasks/agentfriendly/pull_tmp.ex"
 
 run_pull() {
   (
     cd "$TARGET"
-    mix opencode.phoenix.pull --repo "$REPO" --ref "$REF" --dst "$DST" "$@"
+    mix agentfriendly.pull --repo "$REPO" --ref "$REF" --dst "$DST" "$@"
   )
 }
 
@@ -40,7 +40,7 @@ bootstrap_pull_task() {
 
   (
     cd "$TARGET"
-    mix opencode.phoenix.pull.tmp --repo "$REPO" --ref "$REF" --dst "$DST"
+    mix agentfriendly.pull.tmp --repo "$REPO" --ref "$REF" --dst "$DST"
   )
 
   rm -f "$TMP_DST"

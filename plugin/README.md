@@ -12,7 +12,7 @@ OpenCode plugin for Elixir/Phoenix projects using two guard levels only:
 3. Run `npm --prefix plugin test`.
 4. Run `bash test/smoke.sh` before publishing.
 
-Canonical release repo: `mackross/opencode-phoenix`
+Canonical release repo: `mackross/phoenix-agentfriendly`
 
 ## Rule Matrix
 

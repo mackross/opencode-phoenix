@@ -2,8 +2,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TMP_DIR="$(mktemp -d -t opencode-phoenix-smoke-XXXXXX)"
-TARGET="$TMP_DIR/opencode_phoenix_target"
+TMP_DIR="$(mktemp -d -t phoenix-agentfriendly-smoke-XXXXXX)"
+TARGET="$TMP_DIR/phoenix_agentfriendly_target"
 
 cleanup() { rm -rf "$TMP_DIR"; }
 trap cleanup EXIT
@@ -11,50 +11,55 @@ trap cleanup EXIT
 mix phx.new "$TARGET" --no-install --no-ecto >/dev/null
 (cd "$TARGET" && mix deps.get >/dev/null)
 
-OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" "$ROOT/bin/opencode-phoenix" install --target "$TARGET"
-OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" "$ROOT/bin/opencode-phoenix" check --target "$TARGET"
+AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" "$ROOT/bin/agent-friendly-installer" install --target "$TARGET"
+AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" "$ROOT/bin/agent-friendly-installer" check --target "$TARGET"
 
-[[ -f "$TARGET/lib/mix/tasks/opencode/phoenix/pull.ex" ]] || {
+[[ -f "$TARGET/lib/mix/tasks/agentfriendly/pull.ex" ]] || {
   echo "missing installed mix task"
   exit 1
 }
 
-[[ -f "$TARGET/lib/mix/tasks/opencode/phoenix/publish.ex" ]] || {
+[[ -f "$TARGET/lib/mix/tasks/agentfriendly/publish.ex" ]] || {
   echo "missing installed publish task"
   exit 1
 }
 
-[[ -f "$TARGET/lib/mix/tasks/opencode/phoenix/check/check.ex" ]] || {
+[[ -f "$TARGET/lib/mix/tasks/agentfriendly/guardrails/check.ex" ]] || {
   echo "missing installed check task"
   exit 1
 }
 
-[[ -f "$TARGET/lib/opencode/phoenix/guardrails/check.ex" ]] || {
+[[ -f "$TARGET/lib/agent_friendly/guardrails/check.ex" ]] || {
   echo "missing installed guardrails package"
+  exit 1
+}
+
+[[ -f "$TARGET/.agentfriendly/phoenix-agentfriendly.lock.json" ]] || {
+  echo "missing installed lock metadata"
   exit 1
 }
 
 (
   cd "$TARGET"
-  OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" mix opencode.phoenix.pull --check >/dev/null
-  mix opencode.phoenix.check >/dev/null
+  AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" mix agentfriendly.pull --check >/dev/null
+  mix agentfriendly.guardrails.check >/dev/null
 )
 
 printf '\n# local change\n' >> "$TARGET/.agents/skills/elixir/SKILL.md"
 
-if (cd "$TARGET" && OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" mix opencode.phoenix.pull >/dev/null 2>&1); then
+if (cd "$TARGET" && AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" mix agentfriendly.pull >/dev/null 2>&1); then
   echo "expected update to fail without --force"
   exit 1
 fi
 
 (
   cd "$TARGET"
-  OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" mix opencode.phoenix.pull --force >/dev/null
+  AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" mix agentfriendly.pull --force >/dev/null
 )
 
 (
   cd "$TARGET"
-  OPENCODE_PHOENIX_REPO="$ROOT" OPENCODE_PHOENIX_DST="$ROOT" mix opencode.phoenix.pull --check >/dev/null
+  AGENT_FRIENDLY_REPO="$ROOT" AGENT_FRIENDLY_DST="$ROOT" mix agentfriendly.pull --check >/dev/null
 )
 
 echo "smoke passed"

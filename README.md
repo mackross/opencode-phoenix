@@ -1,102 +1,119 @@
-# opencode-phoenix
+# phoenix-agentfriendly
 
-OpenCode guardrails and skills for Phoenix/Elixir projects.
+Agent-friendly guardrails and skills for Phoenix/Elixir projects.
 
 This repo packages:
 
 - `plugin/` - the `elixir-phoenix-guardrails` OpenCode plugin (`deny` + `warn` rules)
 - `skills/` - reusable project skills (`elixir`, `ecto`, `phoenix-live-view`, `phoenix-uploads`, `testing`)
-- `mix_tasks/` - pull task sources installed into consumer repos
+- `lib/agent_friendly/guardrails/` - installable neutral guardrails package
+- `mix_tasks/agentfriendly/` - installable neutral Mix tasks
 - `manifest/install_map.txt` - source-of-truth mapping for installed paths
-- `bin/opencode-phoenix` - thin bootstrap wrapper that ensures `mix opencode.phoenix.pull` exists and then delegates to it
+- `bin/agent-friendly-installer` - bootstrap wrapper that ensures `mix agentfriendly.pull` exists and then delegates to it
+- `migration/migrate_agentfriendly_install.sh` - copy-run-delete migration tool for existing installs
 
 ## Install Into a Project
 
 Clone this repo, then run the installer script targeting your Phoenix app:
 
 ```bash
-./bin/opencode-phoenix install --target /path/to/your_phoenix_app
+./bin/agent-friendly-installer install --target /path/to/your_phoenix_app
 ```
 
-This installs/updates mapped paths from `manifest/install_map.txt`, including:
+This installs or updates the managed paths from `manifest/install_map.txt`, including:
 
 - `.opencode/plugins/elixir-phoenix-guardrails/`
 - `.opencode/plugins/elixir-phoenix-guardrails.js`
 - `.agents/skills/<skill>/` for all bundled skills
-- `lib/opencode/phoenix/guardrails/`
-- `lib/mix/tasks/opencode/phoenix/check/`
-- `lib/mix/tasks/opencode/phoenix/pull.ex`
-- `.opencode/opencode-phoenix.lock.json` lock metadata
+- `lib/agent_friendly/guardrails/`
+- `lib/mix/tasks/agentfriendly/`
+- `.agentfriendly/phoenix-agentfriendly.lock.json`
 
 ## Update / Check
 
 From this repo:
 
 ```bash
-./bin/opencode-phoenix update --target /path/to/your_phoenix_app
-./bin/opencode-phoenix check --target /path/to/your_phoenix_app
+./bin/agent-friendly-installer update --target /path/to/your_phoenix_app
+./bin/agent-friendly-installer check --target /path/to/your_phoenix_app
 ```
 
 If managed files were edited locally in the target repo, update will fail unless forced:
 
 ```bash
-./bin/opencode-phoenix update --target /path/to/your_phoenix_app --force
+./bin/agent-friendly-installer update --target /path/to/your_phoenix_app --force
 ```
 
-You can also set `OPENCODE_PHOENIX_TARGET` instead of passing `--target`.
+You can also set `AGENT_FRIENDLY_TARGET` instead of passing `--target`.
 
-The installed mix task gives projects a single pull/update command:
+The installed tasks give projects a neutral update and verification surface:
 
 ```bash
-mix opencode.phoenix.pull
-mix opencode.phoenix.pull --check
-mix opencode.phoenix.pull --force
-mix opencode.phoenix.check
+mix agentfriendly.pull
+mix agentfriendly.pull --check
+mix agentfriendly.pull --force
+mix agentfriendly.guardrails.check
 ```
 
-Projects can wire the check task into their `precommit` alias, for example:
+Projects can wire the check task into `precommit`, for example:
 
 ```elixir
 precommit: [
   "compile --warnings-as-errors",
   "deps.unlock --unused",
   "format",
-  "opencode.phoenix.check",
+  "agentfriendly.guardrails.check",
   "test"
 ]
 ```
 
-It also installs a publish task for source repos that maintain these managed paths:
+Source repos that maintain these managed paths can publish with:
 
 ```bash
-mix opencode.phoenix.publish --dry-run
-mix opencode.phoenix.publish
+mix agentfriendly.publish --dry-run
+mix agentfriendly.publish
 ```
 
-If `mix opencode.phoenix.pull` is missing, `bin/opencode-phoenix` bootstraps it via a temporary task and removes the temp file after bootstrap.
+If `mix agentfriendly.pull` is missing, `bin/agent-friendly-installer` bootstraps it via a temporary task and removes the temp file after bootstrap.
 
-Optional env vars for the mix task:
+Optional env vars:
 
-- `OPENCODE_PHOENIX_REPO` (default `https://github.com/mackross/opencode-phoenix.git`)
-- `OPENCODE_PHOENIX_REF` (default `main`)
-- `OPENCODE_PHOENIX_DST` (default `/tmp/opencode-phoenix`)
-- `OPENCODE_PHOENIX_REMOTE` (used by `mix opencode.phoenix.publish`)
+- `AGENT_FRIENDLY_REPO` (default `https://github.com/mackross/phoenix-agentfriendly.git`)
+- `AGENT_FRIENDLY_REF` (default `main`)
+- `AGENT_FRIENDLY_DST` (default `/tmp/phoenix-agentfriendly`)
+- `AGENT_FRIENDLY_REMOTE` (used by `mix agentfriendly.publish`)
+
+## Migrate an Existing Install
+
+Already-installed repos should migrate in place once:
+
+```bash
+cp /path/to/phoenix-agentfriendly/migration/migrate_agentfriendly_install.sh .
+bash migrate_agentfriendly_install.sh
+rm migrate_agentfriendly_install.sh
+```
+
+The migration script:
+
+- moves the installed files from the old `opencode` paths to the neutral `agentfriendly` paths
+- rewrites task names, module names, installer names, env vars, and lock paths
+- updates `mix.exs`, `README.md`, and `AGENTS.md` if those files exist
 
 ## Publishing Updates
 
 Use one publishing path:
 
 1. Author changes in your source repo.
-2. Publish to this repo with `mix opencode.phoenix.publish` (git subtree add/pull).
-3. Review and push from `opencode-phoenix`.
+2. Publish to this repo with `mix agentfriendly.publish`.
+3. Review and push from `phoenix-agentfriendly`.
 
 Example:
 
 ```bash
 # In your source repo
-mix opencode.phoenix.publish
+mix agentfriendly.publish
 
-# In opencode-phoenix
+# In phoenix-agentfriendly
 npm --prefix plugin test
 bash test/smoke.sh
 bash test/opencode_integration.sh
