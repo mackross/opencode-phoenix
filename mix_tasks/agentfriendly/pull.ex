@@ -3,7 +3,6 @@ defmodule Mix.Tasks.Agentfriendly.Pull do
 
   @shortdoc "Pulls phoenix-agentfriendly updates into this project"
   @default_repo "https://github.com/mackross/phoenix-agentfriendly.git"
-  @default_dst "/tmp/phoenix-agentfriendly"
   @map_path "manifest/install_map.txt"
   @guardrails_task ~s("agentfriendly.guardrails.check")
 
@@ -20,7 +19,7 @@ defmodule Mix.Tasks.Agentfriendly.Pull do
 
     dst =
       opts
-      |> Keyword.get(:dst, System.get_env("AGENT_FRIENDLY_DST") || @default_dst)
+      |> Keyword.get(:dst, System.get_env("AGENT_FRIENDLY_DST") || default_dst())
       |> Path.expand()
 
     force? = Keyword.get(opts, :force, false)
@@ -225,6 +224,10 @@ defmodule Mix.Tasks.Agentfriendly.Pull do
     prefix = Enum.take(lines, start_index)
     suffix = Enum.drop(lines, end_index + 1)
     prefix ++ replacement ++ suffix
+  end
+
+  defp default_dst do
+    Path.join(System.tmp_dir!(), "phoenix-agentfriendly")
   end
 
   defp check_state(target, dst, mappings) do

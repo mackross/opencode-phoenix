@@ -3,7 +3,6 @@ defmodule Mix.Tasks.Agentfriendly.Publish do
 
   @shortdoc "Publishes managed AgentFriendly Phoenix assets via git subtree"
   @default_remote "git@github.com:mackross/phoenix-agentfriendly.git"
-  @default_dst "/tmp/phoenix-agentfriendly"
 
   @mappings [
     {"lib/agent_friendly/guardrails", "lib/agent_friendly/guardrails"},
@@ -28,7 +27,7 @@ defmodule Mix.Tasks.Agentfriendly.Publish do
 
     dst =
       opts
-      |> Keyword.get(:dst, System.get_env("AGENT_FRIENDLY_DST") || @default_dst)
+      |> Keyword.get(:dst, System.get_env("AGENT_FRIENDLY_DST") || default_dst())
       |> Path.expand()
 
     branch = Keyword.get(opts, :branch, "main")
@@ -155,6 +154,10 @@ defmodule Mix.Tasks.Agentfriendly.Publish do
     ) != ""
   rescue
     _error -> false
+  end
+
+  defp default_dst do
+    Path.join(System.tmp_dir!(), "phoenix-agentfriendly")
   end
 
   defp run_ok?(command, args) do

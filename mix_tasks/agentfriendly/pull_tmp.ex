@@ -3,7 +3,6 @@ defmodule Mix.Tasks.Agentfriendly.Pull.Tmp do
 
   @shortdoc "Bootstraps mix agentfriendly.pull into a project"
   @default_repo "https://github.com/mackross/phoenix-agentfriendly.git"
-  @default_dst "/tmp/phoenix-agentfriendly"
   @pull_src "mix_tasks/agentfriendly/pull.ex"
   @pull_dst "lib/mix/tasks/agentfriendly/pull.ex"
 
@@ -18,7 +17,7 @@ defmodule Mix.Tasks.Agentfriendly.Pull.Tmp do
 
     dst =
       opts
-      |> Keyword.get(:dst, System.get_env("AGENT_FRIENDLY_DST") || @default_dst)
+      |> Keyword.get(:dst, System.get_env("AGENT_FRIENDLY_DST") || default_dst())
       |> Path.expand()
 
     ensure_repo(dst, repo, ref)
@@ -69,6 +68,10 @@ defmodule Mix.Tasks.Agentfriendly.Pull.Tmp do
         run_cmd!("git", ["-C", dst, "merge", "--ff-only", "origin/#{ref}"])
       end
     end
+  end
+
+  defp default_dst do
+    Path.join(System.tmp_dir!(), "phoenix-agentfriendly")
   end
 
   defp run_ok?(command, args) do
