@@ -66,10 +66,10 @@ rewrite_in_place() {
     s/\bMix\.Tasks\.Opencode\.Phoenix\.Pull\.Tmp\b/Mix.Tasks.Agentfriendly.Pull.Tmp/g;
     s/\bMix\.Tasks\.Opencode\.Phoenix\.Pull\b/Mix.Tasks.Agentfriendly.Pull/g;
     s/\bMix\.Tasks\.Opencode\.Phoenix\.Publish\b/Mix.Tasks.Agentfriendly.Publish/g;
-    s/mix opencode\.phoenix\.check/mix agentfriendly.guardrails.check/g;
-    s/mix opencode\.phoenix\.pull\.tmp/mix agentfriendly.pull.tmp/g;
-    s/mix opencode\.phoenix\.pull/mix agentfriendly.pull/g;
-    s/mix opencode\.phoenix\.publish/mix agentfriendly.publish/g;
+    s/opencode\.phoenix\.check/agentfriendly.guardrails.check/g;
+    s/opencode\.phoenix\.pull\.tmp/agentfriendly.pull.tmp/g;
+    s/opencode\.phoenix\.pull/agentfriendly.pull/g;
+    s/opencode\.phoenix\.publish/agentfriendly.publish/g;
     s/bin\/opencode-phoenix/bin\/agent-friendly-installer/g;
     s/\bOpenCode Phoenix guardrails\b/AgentFriendly guardrails/g;
     s/\bopencode-phoenix\b/phoenix-agentfriendly/g;
